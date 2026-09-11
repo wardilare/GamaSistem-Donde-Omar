@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GamaSistem Donde Omar - Sistema Integral | Navegación corregida</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0ecff, #f5f7fb);
+        }
+        .contenedor {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .titulo {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 14px 14px 0 0;
+            text-align: center;
+        }
+        .banner {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .botones {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #1e40af; transform: translateY(-1px); }
+        button.success { background: #10b981; }
+        button.success:hover { background: #059669; }
+        button.warning { background: #f59e0b; }
+        button.warning:hover { background: #d97706; }
+        button.danger { background: #dc2626; }
+        button.danger:hover { background: #b91c1c; }
+        button.info { background: #06b6d4; }
+        button:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+        button:disabled:hover { background: #2563eb; }
+
+        .pantalla { display: none; border-top: 1px solid #ddd; padding-top: 20px; }
+        .pantalla.mostrar { display: block; }
+        .campo { margin-bottom: 15px; }
+        .campo label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background: #eff6ff; }
+        .mensaje {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .mensaje.mostrar { display: block; }
+        .mensaje.error { background: #fee2e2; color: #991b1b; }
+        .stats { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .caja {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid #e5e7eb;
+        }
+        .caja h3 { margin: 0; font-size: 24px; color: #2563eb; }
+        hr { margin: 20px 0; border: none; border-top: 1px solid #e5e7eb; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .card h4 { margin-top: 0; color: #1e40af; }
+        .sql-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .json-view {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .badge {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .rol-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .rol-admin { background: #8b5cf6; color: white; }
+        .rol-tecnico { background: #f59e0b; color: white; }
+        .rol-cliente { background: #10b981; color: white; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+    <!-- Bootstrap 5 para apoyo visual y responsive -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="contenedor">
+    <div class="titulo">
+        <h2>🖥️ GamaSistem Donde Omar</h2>
+        <p>Sistema de Reparaciones | BD Relacional + NoSQL (Vehículos)</p>
+    </div>
+    
+    <img class="banner" src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80" alt="Servicio técnico">
+    
+    <div class="botones" id="barraNavegacion">
+        <button type="button" onclick="verPantalla('login')">🔐 Iniciar Sesión</button>
+        <button type="button" onclick="verPantalla('cliente')" id="btnCliente" disabled>👤 Panel Cliente</button>
+        <button type="button" onclick="verPantalla('tecnico')" id="btnTecnico" disabled>🔧 Panel Técnico</button>
+        <button type="button" onclick="verPantalla('admin')" id="btnAdmin" disabled>📊 Panel Admin</button>
+        <button type="button" onclick="verPantalla('vehiculos')" class="info">🚗 Gestión de Vehículos (NoSQL)</button>
+    </div>
+    <!-- =========================================================
+         MÓDULO DE SERVICIOS - GAMA SYSTEM DONDE OMAR
+         Se integra sin eliminar las funcionalidades anteriores.
+         ========================================================= -->
+    <section id="moduloServicios" class="modulo-servicios" style="
+        background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+        padding:20px; margin:20px 0;">
+        <div class="text-center mb-4">
+            <h3 style="color:#1e40af;">🛠️ Solicitud de servicio - Gama System</h3>
+            <p>Registre la información del equipo que necesita revisión.</p>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5>💻 Computadores</h5>
+                        <p>Mantenimiento y reparación de computadores portátiles y de escritorio.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5>🖨️ Impresoras</h5>
+                        <p>Revisión, mantenimiento y solución de problemas de impresión.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5>🔧 Mantenimiento</h5>
+                        <p>Mantenimiento preventivo para ayudar a conservar los equipos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="formSolicitud" class="row g-3">
+            <div class="col-md-6">
+                <label for="nombreSolicitud" class="form-label">Nombre completo</label>
+                <input type="text" class="form-control" id="nombreSolicitud"
+                       placeholder="Ingrese su nombre">
+            </div>
+
+            <div class="col-md-6">
+                <label for="telefonoSolicitud" class="form-label">Teléfono</label>
+                <input type="tel" class="form-control" id="telefonoSolicitud"
+                       placeholder="Ingrese su teléfono">
+            </div>
+
+            <div class="col-md-6">
+                <label for="tipoSolicitud" class="form-label">Tipo de equipo</label>
+                <select class="form-select" id="tipoSolicitud">
+                    <option value="">Seleccione una opción</option>
+                    <option>Portátil</option>
+                    <option>Computador de escritorio</option>
+                    <option>Impresora</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label for="marcaSolicitud" class="form-label">Marca</label>
+                <input type="text" class="form-control" id="marcaSolicitud"
+                       placeholder="Ejemplo: HP, Lenovo, Dell">
+            </div>
+
+            <div class="col-12">
+                <label for="descripcionSolicitud" class="form-label">
+                    Descripción del problema
+                </label>
+                <textarea class="form-control" id="descripcionSolicitud" rows="3"
+                          placeholder="Describa brevemente el problema"></textarea>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">📤 Registrar solicitud</button>
+                <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+
+            <div class="col-12">
+                <div id="mensajeSolicitud" class="alert d-none" role="alert"></div>
+            </div>
+            <div class="col-12 mt-2">
+                <button type="button" class="btn btn-outline-primary"
+                        onclick="verPantalla('login')">
+                    🔐 Iniciar sesión
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- LOGIN -->
+    <div id="login" class="pantalla mostrar">
+        <div class="grid-2">
+            <div>
+                <h3>Iniciar Sesión</h3>
+                <div id="alertLogin" class="mensaje"></div>
+                <div class="campo">
+                    <label>📧 Correo electrónico:</label>
+                    <input type="email" id="email" placeholder="cliente@email.com / tecnico@email.com / admin@email.com">
+                </div>
+                <div class="campo">
+                    <label>🔒 Contraseña:</label>
+                    <input type="password" id="pass" placeholder="cualquier contraseña">
+                </div>
+                <button onclick="ingresarConRol()">Ingresar</button>
+                <p style="margin-top: 15px; font-size: 12px; background: #f3f4f6; padding: 10px; border-radius: 8px;">
+                    📝 <strong>Usuarios de prueba:</strong><br>
+                    • cliente@email.com → Cliente<br>
+                    • tecnico@email.com → Técnico<br>
+                    • admin@email.com → Administrador
+                </p>
+            </div>
+            <div>
+                <img src="https://images.unsplash.com/photo-1581092921461-eab10380b1a4?auto=format&fit=crop&w=900&q=80" style="width:100%; border-radius:12px;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- CLIENTE -->
+    <div id="cliente" class="pantalla">
+        <h3>👤 Panel del Cliente <span class="rol-badge rol-cliente">CLIENTE</span></h3>
+        <p>Bienvenido, <strong id="clienteNombre">Carlos Pérez</strong></p>
+        <hr>
+        <div id="alertCliente" class="mensaje"></div>
+        <div class="grid-2">
+            <div>
+                <h4>📝 Registrar reparación</h4>
+                <div class="campo"><label>Tipo:</label><select id="tipoEquipo"><option>Portátil</option><option>Computador de escritorio</option><option>Tablet</option></select></div>
+                <div class="campo"><label>Marca:</label><input type="text" id="marcaEquipo" placeholder="HP, Dell"></div>
+                <div class="campo"><label>Serial:</label><input type="text" id="serialEquipo" placeholder="Serial único"></div>
+                <div class="campo"><label>Falla:</label><textarea id="fallaEquipo" rows="2"></textarea></div>
+                <button onclick="registrarReparacion()" class="success">📤 Enviar</button>
+            </div>
+            <div>
+                <h4>📋 Mis reparaciones</h4>
+                <table id="tablaReparaciones"><thead><tr><th># Orden</th><th>Equipo</th><th>Fecha</th><th>Estado</th></tr></thead><tbody id="reparacionesClienteBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TECNICO -->
+    <div id="tecnico" class="pantalla">
+        <h3>🔧 Panel del Técnico <span class="rol-badge rol-tecnico">TÉCNICO</span></h3>
+        <div id="alertTecnico" class="mensaje"></div>
+        <h4>📋 Órdenes de trabajo</h4>
+        <table id="tablaTecnico"><thead><tr><th>Orden</th><th>Cliente</th><th>Equipo</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="tecnicoBody"></tbody></table>
+    </div>
+    
+    <!-- ADMIN -->
+    <div id="admin" class="pantalla">
+        <h3>📊 Panel Administrador <span class="rol-badge rol-admin">ADMIN</span></h3>
+        <div class="stats">
+            <div class="caja"><h3 id="totalReparaciones">0</h3><p>Reparaciones</p></div>
+            <div class="caja"><h3 id="totalVentas">$0</h3><p>Ventas</p></div>
+            <div class="caja"><h3 id="totalClientes">0</h3><p>Clientes</p></div>
+            <div class="caja"><h3 id="totalVehiculos">0</h3><p>Vehículos</p></div>
+        </div>
+        <button onclick="generarReporteGeneral()">📄 Reporte</button>
+        <button onclick="verEsquemasSeguridad()" class="success">🔐 Seguridad</button>
+    </div>
+    
+    <!-- VEHICULOS NoSQL -->
+    <div id="vehiculos" class="pantalla">
+        <h3>🚗 Gestión de Vehículos - NoSQL (MongoDB)</h3>
+        <p>Colección: <strong>vehiculos</strong> | Evidencia GA6-220501096-AA1-EV03</p>
+        <hr>
+        <div class="grid-2">
+            <div>
+                <div class="card">
+                    <h4>📝 Nuevo vehículo</h4>
+                    <div class="campo"><label>Placa:</label><input type="text" id="placaVehiculo" placeholder="ABC123"></div>
+                    <div class="campo"><label>Número serie:</label><input type="text" id="serieVehiculo"></div>
+                    <div class="campo"><label>Modelo:</label><input type="number" id="modeloVehiculo" placeholder="2020"></div>
+                    <div class="campo"><label>Marca:</label><input type="text" id="marcaVehiculo" placeholder="Toyota"></div>
+                    <div class="campo"><label>Kilometraje:</label><input type="number" id="kilometrajeVehiculo"></div>
+                    <div class="campo"><label>Tipo:</label><select id="tipoVehiculo"><option>Sedán</option><option>SUV</option><option>Pickup</option><option>Eléctrico</option></select></div>
+                    <button onclick="insertarVehiculo()" class="success">➕ Insertar (insertOne)</button>
+                    <button onclick="insertarVehiculosEjemplo()" class="info">📦 Ejemplo (insertMany)</button>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <h4>🔍 Consultas</h4>
+                    <button onclick="consultarTodosVehiculos()" class="warning">📋 Todos (find)</button>
+                    <button onclick="consultarPorMarca()" class="warning">🔍 Por marca</button>
+                    <button onclick="consultarPorTipo()" class="warning">🔍 Por tipo</button>
+                </div>
+                <div class="card">
+                    <h4>✏️ Actualizaciones</h4>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <input type="text" id="updatePlaca" placeholder="Placa" style="width:40%">
+                        <input type="number" id="updateKm" placeholder="Nuevo km" style="width:35%">
+                        <button onclick="actualizarUnVehiculo()" class="warning">updateOne</button>
+                    </div>
+                    <button onclick="incrementarKilometrajeMarca()" class="warning" style="margin-top:10px;">📈 +5000km a Toyota (updateMany)</button>
+                </div>
+                <div class="card">
+                    <h4>📊 Datos</h4>
+                    <div id="vehiculosJson" class="json-view">[Sin datos]</div>
+                    <button onclick="mostrarVehiculos()" style="margin-top:10px;">🔄 Refrescar</button>
+                    <button onclick="limpiarVehiculos()" class="danger">🗑️ Limpiar (deleteMany)</button>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>📌 Sentencias MongoDB</h4>
+            <div class="sql-code">
+                db.vehiculos.insertOne({placa:"ABC123", modelo:2020, marca:"Toyota", kilometraje:45000})<br>
+                db.vehiculos.insertMany([...])<br>
+                db.vehiculos.find()<br>
+                db.vehiculos.find({marca:"Toyota"})<br>
+                db.vehiculos.updateOne({placa:"ABC123"},{$set:{kilometraje:50000}})<br>
+                db.vehiculos.updateMany({marca:"Toyota"},{$inc:{kilometraje:5000}})<br>
+                db.vehiculos.deleteMany({})
+            </div>
+            <p><span class="badge">✅ Evidencia cumplida</span> Creación de objetos NoSQL</p>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // ======================= MÓDULO SOLICITUD =======================
+    // Validación básica del nuevo formulario sin afectar los módulos existentes.
+    document.addEventListener("DOMContentLoaded", function () {
+        const formulario = document.getElementById("formSolicitud");
+
+        if (!formulario) return;
+
+        formulario.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const nombre = document.getElementById("nombreSolicitud").value.trim();
+            const telefono = document.getElementById("telefonoSolicitud").value.trim();
+            const tipo = document.getElementById("tipoSolicitud").value;
+            const marca = document.getElementById("marcaSolicitud").value.trim();
+            const descripcion = document.getElementById("descripcionSolicitud").value.trim();
+            const mensaje = document.getElementById("mensajeSolicitud");
+
+            if (!nombre || !telefono || !tipo || !marca || !descripcion) {
+                mensaje.textContent = "Por favor complete todos los campos de la solicitud.";
+                mensaje.className = "alert alert-warning";
+                return;
+            }
+
+            // Se guarda temporalmente la solicitud en memoria del navegador.
+            const solicitud = {
+                nombre,
+                telefono,
+                tipo,
+                marca,
+                descripcion,
+                fecha: new Date().toLocaleString()
+            };
+
+            console.log("Solicitud de servicio registrada:", solicitud);
+
+            mensaje.textContent =
+                "Solicitud registrada correctamente. Se podrá revisar la información del equipo.";
+            mensaje.className = "alert alert-success";
+
+            formulario.reset();
+        });
+    });
+
+
+    // ======================= NOSQL =======================
+    let vehiculos = [];
+    
+    function insertarVehiculo() {
+        let placa = document.getElementById('placaVehiculo').value.trim();
+        let serie = document.getElementById('serieVehiculo').value.trim();
+        let modelo = document.getElementById('modeloVehiculo').value;
+        let marca = document.getElementById('marcaVehiculo').value.trim();
+        let km = document.getElementById('kilometrajeVehiculo').value;
+        let tipo = document.getElementById('tipoVehiculo').value;
+        if (!placa || !serie || !modelo || !marca || !km) { alert("Complete todos"); return; }
+        if (vehiculos.some(v => v.placa === placa)) { alert("Placa ya existe"); return; }
+        vehiculos.push({ placa, numero_serie: serie, modelo: parseInt(modelo), marca, kilometraje: parseInt(km), tipo });
+        document.getElementById('placaVehiculo').value = '';
+        document.getElementById('serieVehiculo').value = '';
+        document.getElementById('modeloVehiculo').value = '';
+        document.getElementById('marcaVehiculo').value = '';
+        document.getElementById('kilometrajeVehiculo').value = '';
+        mostrarVehiculos();
+        actualizarAdmin();
+        alert("✅ Vehículo insertado");
+    }
+    
+    function insertarVehiculosEjemplo() {
+        vehiculos = [
+            { placa: "ABC123", numero_serie: "1HGCM82633A123456", modelo: 2020, marca: "Toyota", kilometraje: 45000, tipo: "Sedán" },
+            { placa: "DEF456", numero_serie: "2HGFG3B53JH123457", modelo: 2021, marca: "Honda", kilometraje: 30000, tipo: "SUV" },
+            { placa: "GHI789", numero_serie: "3N1AB7AP0JY123458", modelo: 2019, marca: "Nissan", kilometraje: 52000, tipo: "Pickup" },
+            { placa: "JKL012", numero_serie: "4T1BF1FK0HU123459", modelo: 2022, marca: "Toyota", kilometraje: 15000, tipo: "Sedán" },
+            { placa: "MNO345", numero_serie: "5YJSA1E26HF123460", modelo: 2018, marca: "Tesla", kilometraje: 68000, tipo: "Eléctrico" }
+        ];
+        mostrarVehiculos();
+        actualizarAdmin();
+        alert("✅ 5 vehículos insertados");
+    }
+    
+    function consultarTodosVehiculos() {
+        if (vehiculos.length === 0) { alert("No hay datos"); return; }
+        mostrarVehiculos();
+        alert("Total: " + vehiculos.length + " vehículos");
+    }
+    
+    function consultarPorMarca() {
+        let marca = prompt("Marca a buscar:", "Toyota");
+        if (!marca) return;
+        let res = vehiculos.filter(v => v.marca === marca);
+        if (res.length === 0) { alert("No hay vehículos de marca " + marca); return; }
+        document.getElementById('vehiculosJson').innerHTML = JSON.stringify(res, null, 2);
+        alert(res.length + " vehículo(s) encontrado(s)");
+    }
+    
+    function consultarPorTipo() {
+        let tipo = prompt("Tipo (Sedán, SUV, Pickup, Eléctrico):", "Sedán");
+        if (!tipo) return;
+        let res = vehiculos.filter(v => v.tipo === tipo);
+        if (res.length === 0) { alert("No hay vehículos tipo " + tipo); return; }
+        document.getElementById('vehiculosJson').innerHTML = JSON.stringify(res, null, 2);
+        alert(res.length + " vehículo(s) encontrado(s)");
+    }
+    
+    function actualizarUnVehiculo() {
+        let placa = document.getElementById('updatePlaca').value.trim();
+        let nuevoKm = document.getElementById('updateKm').value;
+        if (!placa || !nuevoKm) { alert("Ingrese placa y km"); return; }
+        let idx = vehiculos.findIndex(v => v.placa === placa);
+        if (idx === -1) { alert("No se encontró placa " + placa); return; }
+        vehiculos[idx].kilometraje = parseInt(nuevoKm);
+        mostrarVehiculos();
+        alert("Vehículo " + placa + " actualizado");
+        document.getElementById('updatePlaca').value = '';
+        document.getElementById('updateKm').value = '';
+    }
+    
+    function incrementarKilometrajeMarca() {
+        let marca = prompt("Marca para sumar 5000km:", "Toyota");
+        if (!marca) return;
+        let count = 0;
+        vehiculos.forEach(v => { if (v.marca === marca) { v.kilometraje += 5000; count++; } });
+        mostrarVehiculos();
+        alert("+5000km a " + count + " vehículo(s) " + marca);
+    }
+    
+    function mostrarVehiculos() {
+        let div = document.getElementById('vehiculosJson');
+        if (vehiculos.length === 0) div.innerHTML = '[Sin datos]';
+        else div.innerHTML = JSON.stringify(vehiculos, null, 2);
+    }
+    
+    function limpiarVehiculos() {
+        if (confirm("¿Eliminar TODOS los vehículos?")) {
+            vehiculos = [];
+            mostrarVehiculos();
+            actualizarAdmin();
+            alert("Colección limpiada");
+        }
+    }
+    
+    // ======================= RELACIONAL =======================
+    let clientes = [{ id_cliente: 1, nombre: "Carlos Pérez", email: "cliente@email.com" }];
+    let tecnicos = [{ id_tecnico: 1, nombre: "Omar", email: "tecnico@email.com" }];
+    let reparaciones = [
+        { id_reparacion: 1001, fecha_solicitud: "10/04/2026", estado: "Diagnóstico", id_cliente: 1, id_tecnico: 1 },
+        { id_reparacion: 1002, fecha_solicitud: "12/04/2026", estado: "En reparación", id_cliente: 1, id_tecnico: 1 }
+    ];
+    let equipos = [
+        { id_equipo: 1, marca: "HP", serial: "SN-HP-001", id_reparacion: 1001 },
+        { id_equipo: 2, marca: "Dell", serial: "SN-DELL-002", id_reparacion: 1002 }
+    ];
+    let facturas = [{ id_factura: 1, total: 150000, id_reparacion: 1001 }];
+    let contadorReparaciones = 1002;
+    let contadorEquipos = 2;
+    let sesionActual = { email: null, rol: null, id_cliente: null, id_tecnico: null };
+    
+    function obtenerClientePorEmail(e) { return clientes.find(c => c.email === e); }
+    function obtenerTecnicoPorEmail(e) { return tecnicos.find(t => t.email === e); }
+    function obtenerEquipoPorReparacion(id) { return equipos.find(e => e.id_reparacion === id); }
+    function obtenerClientePorId(id) { return clientes.find(c => c.id_cliente === id); }
+    
+    function registrarReparacion() {
+        if (sesionActual.rol !== 'cliente') { alert("Inicie sesión como cliente"); return; }
+        let marca = document.getElementById('marcaEquipo').value.trim();
+        let serial = document.getElementById('serialEquipo').value.trim();
+        let falla = document.getElementById('fallaEquipo').value.trim();
+        if (!marca || !serial || !falla) { alert("Complete campos"); return; }
+        if (equipos.some(e => e.serial === serial)) { alert("Serial ya existe"); return; }
+        contadorReparaciones++;
+        contadorEquipos++;
+        reparaciones.push({ id_reparacion: contadorReparaciones, fecha_solicitud: new Date().toLocaleDateString(), estado: "Diagnóstico", id_cliente: sesionActual.id_cliente, id_tecnico: 1 });
+        equipos.push({ id_equipo: contadorEquipos, tipo: document.getElementById('tipoEquipo').value, marca: marca, serial: serial, id_reparacion: contadorReparaciones });
+        alert("✅ Reparación #" + contadorReparaciones + " registrada");
+        document.getElementById('marcaEquipo').value = '';
+        document.getElementById('serialEquipo').value = '';
+        document.getElementById('fallaEquipo').value = '';
+        cargarPanelCliente();
+        actualizarAdmin();
+    }
+    
+    function actualizarEstadoReparacion(id, nuevoEstado) {
+        let r = reparaciones.find(r => r.id_reparacion === id);
+        if (r) { r.estado = nuevoEstado; return true; }
+        return false;
+    }
+    
+    function cargarPanelCliente() {
+        let tbody = document.getElementById('reparacionesClienteBody');
+        tbody.innerHTML = '';
+        reparaciones.filter(r => r.id_cliente === sesionActual.id_cliente).forEach(rep => {
+            let equipo = obtenerEquipoPorReparacion(rep.id_reparacion);
+            tbody.innerHTML += `<tr><td>${rep.id_reparacion}</td><td>${equipo ? equipo.marca : 'N/A'}</td><td>${rep.fecha_solicitud}</td><td>${rep.estado}</td></tr>`;
+        });
+    }
+    
+    function cargarPanelTecnico() {
+        let tbody = document.getElementById('tecnicoBody');
+        tbody.innerHTML = '';
+        reparaciones.filter(r => r.id_tecnico === sesionActual.id_tecnico).forEach(rep => {
+            let cliente = obtenerClientePorId(rep.id_cliente);
+            let equipo = obtenerEquipoPorReparacion(rep.id_reparacion);
+            let accion = '';
+            if (rep.estado === 'Diagnóstico') accion = `<button onclick="actualizarReparacionTecnico(${rep.id_reparacion}, 'En reparación')">▶️ Iniciar</button>`;
+            else if (rep.estado === 'En reparación') accion = `<button onclick="actualizarReparacionTecnico(${rep.id_reparacion}, 'Completado')">✅ Completar</button>`;
+            else accion = '✓ Finalizada';
+            tbody.innerHTML += `<tr><td>${rep.id_reparacion}</td><td>${cliente ? cliente.nombre : 'N/A'}</td><td>${equipo ? equipo.marca : 'N/A'}</td><td>${rep.estado}</td><td>${accion}</td></tr>`;
+        });
+    }
+    
+    function actualizarAdmin() {
+        document.getElementById('totalReparaciones').innerText = reparaciones.length;
+        document.getElementById('totalClientes').innerText = clientes.length;
+        let totalVentas = facturas.reduce((s, f) => s + f.total, 0);
+        document.getElementById('totalVentas').innerText = '$' + (totalVentas / 1000000).toFixed(1) + 'M';
+        document.getElementById('totalVehiculos').innerText = vehiculos.length;
+    }
+    
+    function actualizarReparacionTecnico(id, nuevoEstado) {
+        if (actualizarEstadoReparacion(id, nuevoEstado)) {
+            alert(`✅ Orden #${id} actualizada a: ${nuevoEstado}`);
+            cargarPanelTecnico();
+            actualizarAdmin();
+        }
+    }
+    
+    function ingresarConRol() {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const pass = document.getElementById('pass').value;
+        const alerta = document.getElementById('alertLogin');
+
+        if (!email || !pass) {
+            alerta.textContent = 'Complete correo y contraseña.';
+            alerta.className = 'mensaje mostrar error';
+            return;
+        }
+
+        const cliente = obtenerClientePorEmail(email);
+        const tecnico = obtenerTecnicoPorEmail(email);
+
+        if (cliente) {
+            sesionActual = { email, rol: 'cliente', id_cliente: cliente.id_cliente, id_tecnico: null };
+            document.getElementById('clienteNombre').innerText = cliente.nombre;
+            actualizarBotonesPorRol();
+            alerta.textContent = `Bienvenido ${cliente.nombre}. Panel Cliente habilitado.`;
+            alerta.className = 'mensaje mostrar';
+            setTimeout(() => {
+                alerta.classList.remove('mostrar');
+                verPantalla('cliente');
+            }, 700);
+            return;
+        }
+
+        if (tecnico) {
+            sesionActual = { email, rol: 'tecnico', id_cliente: null, id_tecnico: tecnico.id_tecnico };
+            actualizarBotonesPorRol();
+            alerta.textContent = `Bienvenido ${tecnico.nombre}. Panel Técnico habilitado.`;
+            alerta.className = 'mensaje mostrar';
+            setTimeout(() => {
+                alerta.classList.remove('mostrar');
+                verPantalla('tecnico');
+            }, 700);
+            return;
+        }
+
+        if (email === 'admin@email.com') {
+            sesionActual = { email, rol: 'admin', id_cliente: null, id_tecnico: null };
+            actualizarBotonesPorRol();
+            alerta.textContent = 'Bienvenido Administrador. Panel Admin habilitado.';
+            alerta.className = 'mensaje mostrar';
+            setTimeout(() => {
+                alerta.classList.remove('mostrar');
+                verPantalla('admin');
+            }, 700);
+            return;
+        }
+
+        sesionActual = { email: null, rol: null, id_cliente: null, id_tecnico: null };
+        actualizarBotonesPorRol();
+        alerta.textContent = 'Usuario no encontrado. Use uno de los correos de prueba.';
+        alerta.className = 'mensaje mostrar error';
+    }
+
+    function generarReporteGeneral() { alert("📄 Reporte generado"); }
+    function verEsquemasSeguridad() { alert("🔐 Seguridad: Roles, integridad referencial, control de acceso"); }
+    
+    function actualizarBotonesPorRol() {
+        const rol = sesionActual.rol;
+        document.getElementById('btnCliente').disabled = rol !== 'cliente';
+        document.getElementById('btnTecnico').disabled = rol !== 'tecnico';
+        document.getElementById('btnAdmin').disabled = rol !== 'admin';
+    }
+
+    function verPantalla(id) {
+        const pantallas = document.querySelectorAll('.pantalla');
+        pantallas.forEach(p => p.classList.remove('mostrar'));
+
+        // La navegación de paneles es controlada por el rol autenticado.
+        if (id === 'cliente' && sesionActual.rol !== 'cliente') {
+            mostrarAlertaNavegacion('Debe iniciar sesión como Cliente para acceder a este panel.');
+            return;
+        }
+        if (id === 'tecnico' && sesionActual.rol !== 'tecnico') {
+            mostrarAlertaNavegacion('Debe iniciar sesión como Técnico para acceder a este panel.');
+            return;
+        }
+        if (id === 'admin' && sesionActual.rol !== 'admin') {
+            mostrarAlertaNavegacion('Debe iniciar sesión como Administrador para acceder a este panel.');
+            return;
+        }
+
+        const pantalla = document.getElementById(id);
+        if (!pantalla) return;
+        pantalla.classList.add('mostrar');
+
+        // El módulo de servicios es público y permanece visible.
+        actualizarBotonesPorRol();
+
+        if (id === 'cliente') cargarPanelCliente();
+        if (id === 'tecnico') cargarPanelTecnico();
+        if (id === 'admin') actualizarAdmin();
+        if (id === 'vehiculos') mostrarVehiculos();
+
+        pantalla.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function mostrarAlertaNavegacion(texto) {
+        const login = document.getElementById('login');
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('mostrar'));
+        login.classList.add('mostrar');
+        const alerta = document.getElementById('alertLogin');
+        alerta.textContent = texto;
+        alerta.className = 'mensaje mostrar error';
+        setTimeout(() => alerta.classList.remove('mostrar'), 2500);
+        login.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Al iniciar, los paneles privados quedan protegidos y el módulo público
+        // de solicitud de servicio permanece visible.
+        actualizarBotonesPorRol();
+    });
+
+</script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
