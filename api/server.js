@@ -1,6 +1,7 @@
 // ======================================================
 // API GamaSistem - Donde Omar
-// Servicio web para registro e inicio de sesión
+// Servicios web para el proyecto
+// Evidencia GA7-220501096-AA5-EV03
 // ======================================================
 
 // Importar las dependencias necesarias
@@ -22,60 +23,74 @@ app.use(express.json());
 // Permitir solicitudes desde el Front-End
 app.use(cors());
 
-// Ruta del archivo donde se almacenan los usuarios
+
+// ======================================================
+// RUTAS DE LOS ARCHIVOS JSON
+// ======================================================
+
 const archivoUsuarios = path.join(
     __dirname,
     "data",
     "users.json"
 );
 
+const archivoClientes = path.join(
+    __dirname,
+    "data",
+    "clientes.json"
+);
+
+const archivoReparaciones = path.join(
+    __dirname,
+    "data",
+    "reparaciones.json"
+);
+
+const archivoVehiculos = path.join(
+    __dirname,
+    "data",
+    "vehiculos.json"
+);
+
 
 // ======================================================
-// FUNCIÓN: obtenerUsuarios
-// Lee los usuarios almacenados en users.json
+// FUNCIONES GENERALES PARA LEER Y GUARDAR INFORMACIÓN
 // ======================================================
 
-function obtenerUsuarios() {
+// Leer información de un archivo JSON
+function leerDatos(archivo) {
 
-    // Verificar si existe el archivo
-    if (!fs.existsSync(archivoUsuarios)) {
+    if (!fs.existsSync(archivo)) {
         return [];
     }
 
-    // Leer el contenido del archivo
     const contenido = fs.readFileSync(
-        archivoUsuarios,
+        archivo,
         "utf8"
     );
 
-    // Si el archivo está vacío, devolver una lista vacía
     return contenido ? JSON.parse(contenido) : [];
 }
 
 
-// ======================================================
-// FUNCIÓN: guardarUsuarios
-// Guarda los usuarios registrados
-// ======================================================
-
-function guardarUsuarios(usuarios) {
+// Guardar información en un archivo JSON
+function guardarDatos(archivo, datos) {
 
     fs.writeFileSync(
-        archivoUsuarios,
-        JSON.stringify(usuarios, null, 2)
+        archivo,
+        JSON.stringify(datos, null, 2)
     );
 }
 
 
 // ======================================================
-// ENDPOINT DE REGISTRO
+// SERVICIO DE REGISTRO DE USUARIOS
 // Método: POST
 // Ruta: /api/registro
 // ======================================================
 
 app.post("/api/registro", async (req, res) => {
 
-    // Obtener usuario y contraseña enviados
     const { usuario, password } = req.body;
 
     // Validar campos obligatorios
@@ -86,8 +101,7 @@ app.post("/api/registro", async (req, res) => {
         });
     }
 
-    // Obtener usuarios existentes
-    const usuarios = obtenerUsuarios();
+    const usuarios = leerDatos(archivoUsuarios);
 
     // Comprobar si el usuario ya existe
     const usuarioExistente = usuarios.find(
@@ -103,22 +117,22 @@ app.post("/api/registro", async (req, res) => {
         });
     }
 
-    // Encriptar la contraseña antes de guardarla
+    // Encriptar la contraseña
     const passwordEncriptada = await bcrypt.hash(
         password,
         10
     );
 
-    // Crear el nuevo usuario
     usuarios.push({
         usuario: usuario,
         password: passwordEncriptada
     });
 
-    // Guardar el usuario
-    guardarUsuarios(usuarios);
+    guardarDatos(
+        archivoUsuarios,
+        usuarios
+    );
 
-    // Respuesta de registro exitoso
     return res.status(201).json({
         mensaje: "Usuario registrado correctamente"
     });
@@ -126,14 +140,13 @@ app.post("/api/registro", async (req, res) => {
 
 
 // ======================================================
-// ENDPOINT DE INICIO DE SESIÓN
+// SERVICIO DE INICIO DE SESIÓN
 // Método: POST
 // Ruta: /api/login
 // ======================================================
 
 app.post("/api/login", async (req, res) => {
 
-    // Obtener los datos enviados
     const { usuario, password } = req.body;
 
     // Validar campos obligatorios
@@ -144,17 +157,14 @@ app.post("/api/login", async (req, res) => {
         });
     }
 
-    // Obtener usuarios registrados
-    const usuarios = obtenerUsuarios();
+    const usuarios = leerDatos(archivoUsuarios);
 
-    // Buscar el usuario
     const usuarioEncontrado = usuarios.find(
         item =>
             item.usuario.toLowerCase() ===
             usuario.toLowerCase()
     );
 
-    // Si el usuario no existe
     if (!usuarioEncontrado) {
 
         return res.status(401).json({
@@ -162,14 +172,12 @@ app.post("/api/login", async (req, res) => {
         });
     }
 
-    // Comparar la contraseña ingresada
-    // con la contraseña almacenada
+    // Comparar contraseña ingresada
     const passwordCorrecta = await bcrypt.compare(
         password,
         usuarioEncontrado.password
     );
 
-    // Verificar si la contraseña es correcta
     if (!passwordCorrecta) {
 
         return res.status(401).json({
@@ -177,9 +185,372 @@ app.post("/api/login", async (req, res) => {
         });
     }
 
-    // Respuesta de autenticación exitosa
     return res.status(200).json({
         mensaje: "Autenticación satisfactoria"
+    });
+});
+
+
+// ======================================================
+// SERVICIO DE CLIENTES
+// ======================================================
+
+// Obtener todos los clientes
+// Método: GET
+// Ruta: /api/clientes
+
+app.get("/api/clientes", (req, res) => {
+
+    const clientes = leerDatos(
+        archivoClientes
+    );
+
+    return res.status(200).json(clientes);
+});
+
+
+// Registrar un cliente
+// Método: POST
+// Ruta: /api/clientes
+
+app.post("/api/clientes", (req, res) => {
+
+    const {
+        nombre,
+        documento,
+        telefono,
+        correo
+    } = req.body;
+
+    // Validar información obligatoria
+    if (!nombre || !documento) {
+
+        return res.status(400).json({
+            error: "El nombre y documento son obligatorios"
+        });
+    }
+
+    const clientes = leerDatos(
+        archivoClientes
+    );
+
+    // Verificar si el documento ya existe
+    const clienteExistente = clientes.find(
+        item =>
+            item.documento === documento
+    );
+
+    if (clienteExistente) {
+
+        return res.status(409).json({
+            error: "El cliente ya se encuentra registrado"
+        });
+    }
+
+    const nuevoCliente = {
+        id: clientes.length + 1,
+        nombre,
+        documento,
+        telefono: telefono || "",
+        correo: correo || ""
+    };
+
+    clientes.push(nuevoCliente);
+
+    guardarDatos(
+        archivoClientes,
+        clientes
+    );
+
+    return res.status(201).json({
+        mensaje: "Cliente registrado correctamente",
+        cliente: nuevoCliente
+    });
+});
+
+
+// ======================================================
+// SERVICIO DE REPARACIONES
+// ======================================================
+
+// Obtener reparaciones
+// Método: GET
+// Ruta: /api/reparaciones
+
+app.get("/api/reparaciones", (req, res) => {
+
+    const reparaciones = leerDatos(
+        archivoReparaciones
+    );
+
+    return res.status(200).json(
+        reparaciones
+    );
+});
+
+
+// Registrar reparación
+// Método: POST
+// Ruta: /api/reparaciones
+
+app.post("/api/reparaciones", (req, res) => {
+
+    const {
+        cliente,
+        equipo,
+        problema,
+        estado
+    } = req.body;
+
+    // Validar campos obligatorios
+    if (!cliente || !equipo || !problema) {
+
+        return res.status(400).json({
+            error: "Cliente, equipo y problema son obligatorios"
+        });
+    }
+
+    const reparaciones = leerDatos(
+        archivoReparaciones
+    );
+
+    const nuevaReparacion = {
+        id: reparaciones.length + 1,
+        cliente,
+        equipo,
+        problema,
+        estado: estado || "Recibido"
+    };
+
+    reparaciones.push(
+        nuevaReparacion
+    );
+
+    guardarDatos(
+        archivoReparaciones,
+        reparaciones
+    );
+
+    return res.status(201).json({
+        mensaje: "Reparación registrada correctamente",
+        reparacion: nuevaReparacion
+    });
+});
+
+
+// Actualizar estado de reparación
+// Método: PUT
+// Ruta: /api/reparaciones/:id
+
+app.put("/api/reparaciones/:id", (req, res) => {
+
+    const id = parseInt(req.params.id);
+
+    const { estado } = req.body;
+
+    if (!estado) {
+
+        return res.status(400).json({
+            error: "El estado es obligatorio"
+        });
+    }
+
+    const reparaciones = leerDatos(
+        archivoReparaciones
+    );
+
+    const reparacion = reparaciones.find(
+        item => item.id === id
+    );
+
+    if (!reparacion) {
+
+        return res.status(404).json({
+            error: "Reparación no encontrada"
+        });
+    }
+
+    reparacion.estado = estado;
+
+    guardarDatos(
+        archivoReparaciones,
+        reparaciones
+    );
+
+    return res.status(200).json({
+        mensaje: "Estado de reparación actualizado",
+        reparacion
+    });
+});
+
+
+// ======================================================
+// SERVICIO DE VEHÍCULOS
+// ======================================================
+
+// Obtener vehículos
+// Método: GET
+// Ruta: /api/vehiculos
+
+app.get("/api/vehiculos", (req, res) => {
+
+    const vehiculos = leerDatos(
+        archivoVehiculos
+    );
+
+    return res.status(200).json(
+        vehiculos
+    );
+});
+
+
+// Registrar vehículo
+// Método: POST
+// Ruta: /api/vehiculos
+
+app.post("/api/vehiculos", (req, res) => {
+
+    const {
+        placa,
+        marca,
+        modelo,
+        propietario
+    } = req.body;
+
+    // Validar campos obligatorios
+    if (!placa || !marca || !modelo) {
+
+        return res.status(400).json({
+            error: "Placa, marca y modelo son obligatorios"
+        });
+    }
+
+    const vehiculos = leerDatos(
+        archivoVehiculos
+    );
+
+    const vehiculoExistente = vehiculos.find(
+        item =>
+            item.placa.toLowerCase() ===
+            placa.toLowerCase()
+    );
+
+    if (vehiculoExistente) {
+
+        return res.status(409).json({
+            error: "El vehículo ya se encuentra registrado"
+        });
+    }
+
+    const nuevoVehiculo = {
+        id: vehiculos.length + 1,
+        placa,
+        marca,
+        modelo,
+        propietario: propietario || ""
+    };
+
+    vehiculos.push(nuevoVehiculo);
+
+    guardarDatos(
+        archivoVehiculos,
+        vehiculos
+    );
+
+    return res.status(201).json({
+        mensaje: "Vehículo registrado correctamente",
+        vehiculo: nuevoVehiculo
+    });
+});
+
+
+// Actualizar vehículo
+// Método: PUT
+// Ruta: /api/vehiculos/:id
+
+app.put("/api/vehiculos/:id", (req, res) => {
+
+    const id = parseInt(req.params.id);
+
+    const {
+        marca,
+        modelo,
+        propietario
+    } = req.body;
+
+    const vehiculos = leerDatos(
+        archivoVehiculos
+    );
+
+    const vehiculo = vehiculos.find(
+        item => item.id === id
+    );
+
+    if (!vehiculo) {
+
+        return res.status(404).json({
+            error: "Vehículo no encontrado"
+        });
+    }
+
+    if (marca) {
+        vehiculo.marca = marca;
+    }
+
+    if (modelo) {
+        vehiculo.modelo = modelo;
+    }
+
+    if (propietario) {
+        vehiculo.propietario = propietario;
+    }
+
+    guardarDatos(
+        archivoVehiculos,
+        vehiculos
+    );
+
+    return res.status(200).json({
+        mensaje: "Vehículo actualizado correctamente",
+        vehiculo
+    });
+});
+
+
+// Eliminar vehículo
+// Método: DELETE
+// Ruta: /api/vehiculos/:id
+
+app.delete("/api/vehiculos/:id", (req, res) => {
+
+    const id = parseInt(req.params.id);
+
+    const vehiculos = leerDatos(
+        archivoVehiculos
+    );
+
+    const indice = vehiculos.findIndex(
+        item => item.id === id
+    );
+
+    if (indice === -1) {
+
+        return res.status(404).json({
+            error: "Vehículo no encontrado"
+        });
+    }
+
+    const vehiculoEliminado =
+        vehiculos.splice(indice, 1)[0];
+
+    guardarDatos(
+        archivoVehiculos,
+        vehiculos
+    );
+
+    return res.status(200).json({
+        mensaje: "Vehículo eliminado correctamente",
+        vehiculo: vehiculoEliminado
     });
 });
 

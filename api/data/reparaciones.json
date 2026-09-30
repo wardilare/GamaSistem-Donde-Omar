@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "cliente": "Carlos Perez",
+    "equipo": "Portatil Lenovo",
+    "problema": "No enciende",
+    "estado": "En reparación"
+  }
+]
